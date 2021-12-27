@@ -132,7 +132,9 @@ class App extends Component {
 
   chooseImage = (cardId) => {
     cardId = cardId.toString();
-    if (this.state.cardsWon.includes(cardId)) {
+    if (this.state.allTokenURIs.length === 6) {
+      return CARD_ARRAY[cardId].img;
+    } else if (this.state.cardsWon.includes(cardId)) {
       return window.location.origin + "/images/white.png";
     } else if (this.state.cardsChosenId.includes(cardId)) {
       return CARD_ARRAY[cardId].img;
@@ -164,8 +166,10 @@ class App extends Component {
         window.location.origin + CARD_ARRAY[optionOneId].img.toString()
     );
     if (result.length === 0) {
-      alert("You found a match");
-      this.state.token.methods
+      if (this.state.allTokenURIs.length + 1 === CARD_ARRAY.length / 2) {
+        alert("Congratulations! You found a final image!");
+      } else alert("You found a match");
+      await this.state.token.methods
         .mint(
           this.state.account,
           window.location.origin + CARD_ARRAY[optionOneId].img.toString()
@@ -212,15 +216,10 @@ class App extends Component {
       cardsChosen: [],
       cardsChosenId: [],
     });
-    if (
-      this.state.cardsWon.length + this.state.tokenURIs.length ===
-      CARD_ARRAY.length
-    ) {
-      alert("Congratulations! You found them all!");
-    }
   };
 
   render() {
+    const { allTokenURIs } = this.state;
     return (
       <div>
         <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
@@ -251,7 +250,11 @@ class App extends Component {
           <div className="row">
             <main role="main" className="col-lg-12 d-flex text-center">
               <div className="content mr-auto ml-auto">
-                <h1 className="d-4">Start matching now!</h1>
+                <h1 className="d-4">
+                  {allTokenURIs.length === 6
+                    ? "No available tokens"
+                    : "Start matching now!"}
+                </h1>
                 <div className="grid mb-4">
                   {this.state.cardArray.map((card, key) => {
                     return (
@@ -262,7 +265,8 @@ class App extends Component {
                         onClick={(event) => {
                           let cardId = event.target.getAttribute("data-id");
                           if (
-                            !this.state.cardsWon.includes(cardId.toString())
+                            !this.state.cardsWon.includes(cardId.toString()) &&
+                            allTokenURIs.length !== 6
                           ) {
                             this.flipCard(cardId);
                           }
